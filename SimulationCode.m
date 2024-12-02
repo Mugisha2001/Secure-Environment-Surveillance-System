@@ -1,50 +1,60 @@
-% Clear workspace
+% Secure Environment Surveillance System
+% Designed for hospital and campus applications
 clear; clc;
 
-% Parameters
-time_duration = 20; % Simulation time in seconds
-motion_trigger = randi([0, 1], 1, time_duration); % Random motion detection (1 = motion detected)
-temperature_data = 20 + randn(1, time_duration); % Random temperature data around 20°C
-temperature_threshold = 30; % Temperature alert threshold in °C
+%% Parameters
+% Simulation time
+sim_time = 10; % seconds
 
-% Initialize system states
-camera_state = zeros(1, time_duration); % 0 = off, 1 = on
-alarm_state = zeros(1, time_duration); % 0 = off, 1 = on
+% Motion sensor parameters
+motion_detected = randi([0, 1], 1, sim_time); % Random motion detection (0: No motion, 1: Motion)
 
-% Simulation logic
-for t = 1:time_duration
-    if motion_trigger(t) == 1
-        camera_state(t) = 1; % Activate camera
-        disp(['Motion detected at time ', num2str(t), ' seconds. Camera ON.']);
-    end
-    
-    if temperature_data(t) > temperature_threshold
-        alarm_state(t) = 1; % Trigger alarm
-        disp(['High temperature detected at time ', num2str(t), ...
-              ' seconds. Alarm Activated. Temp: ', num2str(temperature_data(t)), '°C']);
+% Temperature sensor parameters
+temperature = 20 + 5 * randn(1, sim_time); % Simulated temperature (mean: 20°C, std dev: 5°C)
+temperature_threshold = 40; % Threshold for high temperature
+
+% Alarm Initialization
+alarm = zeros(1, sim_time);
+
+%% Simulation Loop
+for t = 1:sim_time
+    % Check conditions for alarm activation
+    if motion_detected(t) == 1 || temperature(t) > temperature_threshold
+        alarm(t) = 1; % Trigger alarm
+    else
+        alarm(t) = 0; % No alarm
     end
 end
 
-% Visualization
-figure;
-subplot(3,1,1);
-stem(motion_trigger, 'LineWidth', 1.5);
-title('Motion Sensor Output');
-xlabel('Time (s)'); ylabel('Motion Detected (0/1)'); grid on;
+%% Plotting Results
+time = 1:sim_time;
 
-subplot(3,1,2);
-plot(temperature_data, '-o', 'LineWidth', 1.5);
+% Motion detection plot
+subplot(3, 1, 1);
+stem(time, motion_detected, 'LineWidth', 1.5);
+title('Motion Sensor Data');
+xlabel('Time (s)'); ylabel('Motion Detected (0/1)');
+grid on;
+
+% Temperature plot
+subplot(3, 1, 2);
+plot(time, temperature, 'LineWidth', 1.5);
 hold on;
-yline(temperature_threshold, 'r--', 'Threshold');
+yline(temperature_threshold, '--r', 'Temperature Threshold');
 title('Temperature Sensor Data');
-xlabel('Time (s)'); ylabel('Temperature (°C)'); grid on;
+xlabel('Time (s)'); ylabel('Temperature (°C)');
+grid on;
 
-subplot(3,1,3);
-plot(camera_state, 'g', 'LineWidth', 1.5);
-hold on;
-plot(alarm_state, 'r', 'LineWidth', 1.5);
-legend('Camera State', 'Alarm State');
-title('System States');
-xlabel('Time (s)'); ylabel('State (0/1)'); grid on;
+% Alarm plot
+subplot(3, 1, 3);
+stem(time, alarm, 'LineWidth', 1.5, 'MarkerFaceColor', 'r');
+title('Alarm Status');
+xlabel('Time (s)'); ylabel('Alarm (0/1)');
+grid on;
 
-disp('Simulation Complete.');
+%% Display Results in Command Window
+disp('--- Simulation Results ---');
+disp(['Total Time Simulated: ', num2str(sim_time), ' seconds']);
+disp(['Motion Events Detected: ', num2str(sum(motion_detected))]);
+disp(['High Temperature Events Detected: ', num2str(sum(temperature > temperature_threshold))]);
+disp(['Alarm Triggered: ', num2str(sum(alarm)), ' times']);
